@@ -8,6 +8,7 @@ compiler.link("shell32");
 compiler.link("user32");
 compiler.link("comctl32");
 compiler.compile(`
+#define WIN32_LEAN_AND_MEAN
 #define UNICODE
 #define WINVER 0x0601
 #define _WIN32_WINNT 0x0601
@@ -20,6 +21,11 @@ compiler.compile(`
 #include <shlobj.h>
 #include <strsafe.h>
 #include <tjs.h>
+
+void hideConsole() {
+  DWORD list[16];
+  if (GetConsoleProcessList(list, 16) == 1) FreeConsole();
+}
 
 int getexepath(tjscallback cb) {
   WCHAR path[MAX_PATH];
@@ -234,7 +240,9 @@ const api = compiler.relocate({
   dialog: "wwwwwwww!i" as const,
   install: "iww!i" as const,
   uninstall: "i!i" as const,
+  hideConsole: "" as const,
 })
+api.hideConsole();
 if (!api.checkIsProcessElevated()) {
   const clicked = api.dialog(
     "TinyJS Installer",
